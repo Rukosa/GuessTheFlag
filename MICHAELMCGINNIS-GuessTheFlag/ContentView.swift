@@ -92,6 +92,7 @@ struct ContentView: View {
         else{
         showingScore = true
         }
+        //comment
     }
     func askQuestion(){
         countries.shuffle()
