@@ -27,6 +27,10 @@ struct ContentView: View {
     @State private var userScore = 0
     @State private var flagChosen = ""
     @State private var questionCounter = 0
+    //animations
+    @State private var animationAmount = 0.0
+    @State private var animationOpacity = 1.0
+    @State private var animateOpacity = false
     var body: some View {
         ZStack{
             RadialGradient(stops: [
@@ -46,9 +50,33 @@ struct ContentView: View {
                 }
                 ForEach(0..<3){ number in
                     Button{
+                        flagChosen = countries[number]
+
+                        withAnimation{
+                            animationAmount += 360
+                            animationOpacity -= 0.75
+                            animateOpacity = true
+                        }
                         flagTapped(number)
+
                     } label: {
+                        flagChosen == countries[number] ?
                         FlagImage(images: countries[number])
+                            .rotation3DEffect(.degrees(animationAmount), axis: (x : 0, y: 1, z : 0))
+                            .opacity(1.0)
+                            .animation(
+                                .easeInOut(duration: 1)
+                                    .repeatCount(3, autoreverses: true),          value: animationOpacity
+                            )
+                        :
+                        FlagImage(images: countries[number])
+                            .rotation3DEffect(.degrees(0), axis: (x : 0, y: 0, z : 0))
+                            .opacity(animateOpacity ? 0.25 : 1)
+                            .animation(
+                                .easeInOut(duration: 1)
+                                    .repeatCount(3, autoreverses: true),
+                                value: animationOpacity
+                            )
                     }
                 }
             }
@@ -67,7 +95,9 @@ struct ContentView: View {
         }
         
         .alert(scoreTitle, isPresented: $showingScore){
-            Button("Continue", action:  askQuestion)
+            Button("Continue"){
+                askQuestion()
+            }
         } message: {
             if scoreTitle == "Wrong"{
                 Text("You chose: \(flagChosen)")
@@ -89,7 +119,6 @@ struct ContentView: View {
             userScore += 1
             scoreTitle = "Correct"
         } else {
-            flagChosen = countries[number]
             userScore -= 1
             scoreTitle = "Wrong"
         }
@@ -103,6 +132,7 @@ struct ContentView: View {
         //comment
     }
     func askQuestion(){
+        animateOpacity = false
         countries.shuffle()
         correctAnswer = Int.random(in: 0...2)
     }
